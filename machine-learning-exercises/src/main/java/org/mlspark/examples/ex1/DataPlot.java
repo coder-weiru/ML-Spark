@@ -27,20 +27,20 @@ public class DataPlot {
 
 	private static final String DATA_PATH = "src/test/resources/data/ex1";
 	
-	private static final FlatMapFunction<String, String> DATA_EXTRACTOR = new FlatMapFunction<String, String>() {
+    static final FlatMapFunction<String, String> DATA_EXTRACTOR = new FlatMapFunction<String, String>() {
 		private static final long serialVersionUID = 1L;
 		public Iterable<String> call(final String s) throws Exception {
 			return Arrays.asList(s.split("\n"));
 		}
 	};
 	
-	private static final ToDoubleFunction<String> X_EXTRACTOR = s -> {
+    static final ToDoubleFunction<String> X_EXTRACTOR = s -> {
 		String[] ls = s.split(",");
 		double x = Double.parseDouble(ls[0]);
 		return x;
 	};
 
-	private static final ToDoubleFunction<String> Y_EXTRACTOR = s -> {
+	static final ToDoubleFunction<String> Y_EXTRACTOR = s -> {
 		String[] ls = s.split(",");
 		double y = Double.parseDouble(ls[1]);
 		return y;
@@ -49,13 +49,13 @@ public class DataPlot {
 	public void plot() {
 		SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                JFrame frame = new JFrame("Charts");
+                JFrame frame = new JFrame("Machine Learning - Linear Regression");
 
                 frame.setSize(600, 400);
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.setVisible(true);
 
-                XYDataset ds = createChartDataset();
+                XYDataset ds = createChartDataset(DATA_PATH + "/ex1data1.txt");
 				JFreeChart chart = ChartFactory.createScatterPlot("Scatter plot of training data",
 						"Population of City in 10,000s", "Profit in $10,000s", ds, PlotOrientation.VERTICAL, true, true,
                         false);
@@ -75,15 +75,18 @@ public class DataPlot {
         });
 	}
 
+	public static DataPlot getInstance() {
+		return instance;
+	}
 	public static void main(String[] args) {
-		instance.plot();
+		getInstance().plot();
     }
 
-	private XYDataset createChartDataset() {
-		SparkConf conf = new SparkConf().setAppName("org.mlspark.examples.ex1.DataPlot").setMaster("local");
+    public XYDataset createChartDataset(String dataFile) {
+		SparkConf conf = new SparkConf().setAppName(DataPlot.class.getName()).setMaster("local");
 		JavaSparkContext context = new JavaSparkContext(conf);
 
-		JavaRDD<String> file = context.textFile(DATA_PATH + "/ex1data1.txt");
+		JavaRDD<String> file = context.textFile(dataFile);
 		JavaRDD<String> data = file.flatMap(DATA_EXTRACTOR);
 
 		double[] lx = data.collect().stream().mapToDouble(X_EXTRACTOR).toArray();
