@@ -11,6 +11,7 @@ import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.regression.LabeledPoint;
 import org.apache.spark.mllib.regression.LinearRegressionModel;
 import org.apache.spark.mllib.regression.LinearRegressionWithSGD;
+import org.mlspark.examples.Config;
 
 import scala.Tuple2;
 
@@ -20,9 +21,10 @@ public class LinearRegressionWithGradientDescent implements Serializable {
 
 	private static LinearRegressionWithGradientDescent instance = new LinearRegressionWithGradientDescent();
 
-	private static final String DATA_PATH = "src/test/resources/data/ex1";
-
 	private LinearRegressionModel model;
+
+	private static final String DATA_FILE = "/ex1/ex1data1.txt";
+
 	final Function<String, LabeledPoint> DATA_EXTRACTOR = new Function<String, LabeledPoint>() {
 		private static final long serialVersionUID = 1L;
 
@@ -59,7 +61,8 @@ public class LinearRegressionWithGradientDescent implements Serializable {
 		SparkConf conf = new SparkConf().setAppName(DataPlot.class.getName()).setMaster("local");
 		JavaSparkContext context = new JavaSparkContext(conf);
 
-		String path = DATA_PATH + "/ex1data1.txt";
+		String path = Config.getInstance().getDataPath() + DATA_FILE;
+		System.out.println("datafile absolute path: " + path);
 		JavaRDD<String> data = context.textFile(path);
 		JavaRDD<LabeledPoint> parsedData = data.map(DATA_EXTRACTOR);
 		parsedData.cache();
@@ -74,7 +77,8 @@ public class LinearRegressionWithGradientDescent implements Serializable {
 		System.out.println("training Mean Squared Error = " + MSE);
 
 		// Save model
-		model.save(context.sc(), LinearRegressionWithGradientDescent.class.getName());
+		// model.save(context.sc(),
+		// LinearRegressionWithGradientDescent.class.getName());
 		context.close();
 
 	}

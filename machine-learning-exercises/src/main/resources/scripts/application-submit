@@ -1,0 +1,4 @@
+./bin/spark-submit \
+  --class org.mlspark.examples.ex1.LinearRegressionWithGradientDescent \
+  --master local \
+  /mnt/hgfs/machine-learning-exercises/target/machine-learning-exercises-1.0-SNAPSHOT.jar 
