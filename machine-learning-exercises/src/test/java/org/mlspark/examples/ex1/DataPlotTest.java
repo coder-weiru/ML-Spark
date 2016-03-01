@@ -2,7 +2,6 @@ package org.mlspark.examples.ex1;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.ToDoubleFunction;
@@ -28,20 +27,6 @@ public class DataPlotTest {
 		double y = Double.parseDouble(ls[1]);
 		return y;
 	};
-	
-	
-	@Test
-	public final void testDATA_EXTRACTOR() throws Exception {
-		Iterable<String> data = DataPlot.DATA_EXTRACTOR.call("123\n456\n890");
-		final List<String> ls = new ArrayList<String>();
-		data.forEach(s -> {
-			ls.add(s);
-		});
-		assertEquals(ls.size(), 3);
-		assertEquals(ls.get(0), "123");
-		assertEquals(ls.get(1), "456");
-		assertEquals(ls.get(2), "890");
-	}
 	
 	@Test
 	public final void testX_EXTRACTOR() {

@@ -2,16 +2,16 @@ package org.mlspark.examples.ex1;
 
 import java.awt.Color;
 import java.awt.Shape;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.ToDoubleFunction;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.commons.io.IOUtils;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -21,20 +21,15 @@ import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.xy.DefaultXYDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.util.ShapeUtilities;
+import org.mlspark.examples.Config;
 
 public class DataPlot {
 	private static DataPlot instance = new DataPlot();
 
-	private static final String DATA_PATH = "src/test/resources/data/ex1";
-	
-    static final FlatMapFunction<String, String> DATA_EXTRACTOR = new FlatMapFunction<String, String>() {
-		private static final long serialVersionUID = 1L;
-		public Iterable<String> call(final String s) throws Exception {
-			return Arrays.asList(s.split("\n"));
-		}
-	};
-	
-    static final ToDoubleFunction<String> X_EXTRACTOR = s -> {
+	private static Config config = Config.getInstance();
+	private static final String DATA_FILE = config.getLocalDataPath() + "/ex1/ex1data1.txt";
+
+	static final ToDoubleFunction<String> X_EXTRACTOR = s -> {
 		String[] ls = s.split(",");
 		double x = Double.parseDouble(ls[0]);
 		return x;
@@ -55,7 +50,7 @@ public class DataPlot {
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.setVisible(true);
 
-                XYDataset ds = createChartDataset(DATA_PATH + "/ex1data1.txt");
+				XYDataset ds = createChartDataset(DATA_FILE);
 				JFreeChart chart = ChartFactory.createScatterPlot("Scatter plot of training data",
 						"Population of City in 10,000s", "Profit in $10,000s", ds, PlotOrientation.VERTICAL, true, true,
                         false);
@@ -82,19 +77,20 @@ public class DataPlot {
 		getInstance().plot();
     }
 
-    public XYDataset createChartDataset(String dataFile) {
-		SparkConf conf = new SparkConf().setAppName(DataPlot.class.getName()).setMaster("local");
-		JavaSparkContext context = new JavaSparkContext(conf);
+	public XYDataset createChartDataset(String dataFile) {
+		String file = "";
+		try {
+			file = IOUtils.toString(new FileInputStream(dataFile));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		List<String> data = Arrays.asList(file.split("\n"));
 
-		JavaRDD<String> file = context.textFile(dataFile);
-		JavaRDD<String> data = file.flatMap(DATA_EXTRACTOR);
+		double[] lx = data.stream().mapToDouble(X_EXTRACTOR).toArray();
 
-		double[] lx = data.collect().stream().mapToDouble(X_EXTRACTOR).toArray();
-
-		double[] ly = data.collect().stream().mapToDouble(Y_EXTRACTOR).toArray();
+		double[] ly = data.stream().mapToDouble(Y_EXTRACTOR).toArray();
 
 		double[][] series = new double[][] { lx, ly };
-		context.close();
 
 		DefaultXYDataset ds = new DefaultXYDataset();
 

@@ -27,4 +27,8 @@ public final class Config {
 	public String getDataPath() {
 		return (String) properties.get("data.path");
 	}
+
+	public String getLocalDataPath() {
+		return (String) properties.get("local.data.path");
+	}
 }
