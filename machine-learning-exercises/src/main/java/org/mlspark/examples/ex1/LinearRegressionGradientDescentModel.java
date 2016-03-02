@@ -10,6 +10,8 @@ import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.regression.LabeledPoint;
 import org.apache.spark.mllib.regression.LinearRegressionModel;
 import org.apache.spark.mllib.regression.LinearRegressionWithSGD;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import scala.Tuple2;
 
@@ -21,6 +23,8 @@ public class LinearRegressionGradientDescentModel implements Serializable {
 
 	private JavaRDD<LabeledPoint> parsedData;
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(LinearRegressionGradientDescentModel.class);
+
 	public static final Function<String, LabeledPoint> LABELEDPOINT_DATA_EXTRACTOR = new Function<String, LabeledPoint>() {
 		
 		private static final long serialVersionUID = -1167483833573007220L;
@@ -29,8 +33,9 @@ public class LinearRegressionGradientDescentModel implements Serializable {
 			String[] parts = line.split(",");
 			String[] features = parts[1].split(" ");
 			double[] v = new double[features.length];
-			for (int i = 0; i < features.length - 1; i++)
+			for (int i = 0; i < features.length; i++) {
 				v[i] = Double.parseDouble(features[i]);
+			}
 			return new LabeledPoint(Double.parseDouble(parts[0]), Vectors.dense(v));
 		}
 
@@ -47,6 +52,9 @@ public class LinearRegressionGradientDescentModel implements Serializable {
 
 		model = LinearRegressionWithSGD.train(JavaRDD.toRDD(parsedData), numIterations);
 
+		parsedData.collect().forEach(labeledPoint -> {
+			LOGGER.info(String.format("LabledPoint[%s]", labeledPoint.toString()));
+		});
 	}
 
 	public double computeMeanSquaredError() {

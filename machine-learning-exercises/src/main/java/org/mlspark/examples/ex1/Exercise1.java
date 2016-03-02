@@ -21,7 +21,7 @@ public class Exercise1 {
 
 		LinearRegressionGradientDescentModel model = new LinearRegressionGradientDescentModel();
 
-		System.out.println("datafile absolute path: " + DATA_FILE);
+		LOGGER.info("datafile absolute path: " + DATA_FILE);
 
 		model.train(sparkContext, DATA_FILE, 1500);
 
@@ -31,7 +31,7 @@ public class Exercise1 {
 		LOGGER.info(String.format("[%1$s]For population = 35,000, we predict a profit of %2$f\n",
 				Exercise1.class.getName(), model.predict(3.5d) * 10000));
 		
-		LOGGER.info(String.format("[%1$s]For population = 35,000, we predict a profit of %2$f\n",
+		LOGGER.info(String.format("[%1$s]For population = 70,000, we predict a profit of %2$f\n",
 				Exercise1.class.getName(), model.predict(7.0d) * 10000));
 
 		sparkContext.close();
