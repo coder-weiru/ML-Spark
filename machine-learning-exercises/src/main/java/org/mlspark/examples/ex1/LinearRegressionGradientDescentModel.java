@@ -2,7 +2,6 @@ package org.mlspark.examples.ex1;
 
 import java.io.Serializable;
 
-import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaDoubleRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -16,7 +15,7 @@ import scala.Tuple2;
 
 public class LinearRegressionGradientDescentModel implements Serializable {
 
-	private static final long serialVersionUID = -5634788839704971874L;
+	private static final long serialVersionUID = -2351862905095309501L;
 
 	private LinearRegressionModel model;
 
@@ -37,19 +36,17 @@ public class LinearRegressionGradientDescentModel implements Serializable {
 
 	};
 
-	public void train(String datafile, int numIterations) {
+	public LinearRegressionGradientDescentModel() {
+		super();
+	}
 
-		SparkConf conf = new SparkConf().setAppName(LinearRegressionGradientDescentModel.class.getName())
-				.setMaster("local");
-		JavaSparkContext context = new JavaSparkContext(conf);
-
-		JavaRDD<String> data = context.textFile(datafile);
+	public void train(JavaSparkContext sparkContext, String datafile, int numIterations) {
+		JavaRDD<String> data = sparkContext.textFile(datafile);
 		parsedData = data.map(LABELEDPOINT_DATA_EXTRACTOR);
 		parsedData.cache();
 
 		model = LinearRegressionWithSGD.train(JavaRDD.toRDD(parsedData), numIterations);
 
-		context.close();
 	}
 
 	public double computeMeanSquaredError() {
